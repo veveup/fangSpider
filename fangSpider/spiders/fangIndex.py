@@ -12,47 +12,82 @@ from fangSpider.items import NewhouseDetailItem
 from fangSpider.items import NewhouseKaipanDetail
 from fangSpider.items import NewhouseKaipanPostDetail
 from fangSpider.items import NewhouseDeliveryTimeDetailIndex
+from fangSpider import mylogger
 
 pageCouner = 0
 loupan_index = []
 
 
+# 网站域名 为避免争议 这里留空 请自行填入 “房” 的拼音
+host = 'fang'
+site = host+'.com'
+
+#是否只抓取一个城市 
+isSoloCityOnly = False
+# 从相应网站获得 城市的代码 比如郑州是 zz 
+citycode = 'zz'
+
+start_url = citycode + '.' + site
+
+# 获得logger
+ml = mylogger.myLogger()
+logger = ml.getLogger()
+
+if isSoloCityOnly:
+    startList = ['https://'+start_url]
+    ruleList =(
+        Rule(LinkExtractor(allow=r'http://'+citycode+'\.'+host+'\.com/$'), callback='dircet_to_family', follow=True),
+        )
+else:
+    startList = ['https://www.'+site+'/SoufunFamily.htm']
+    ruleList = (
+        Rule(LinkExtractor(allow=r'http://.+\.'+host+'\.com/$'), callback='dircet_to_family', follow=False),
+        )
+
+
+
 class FangindexSpider(CrawlSpider):
     name = 'fangIndex'
-    allowed_domains = ['fang.com']
-    start_urls = ['https://www.fang.com/SoufunFamily.htm']
-    # start_urls = ['https://zz.newhouse.fang.com/house/s/']
+    allowed_domains = [site]
+    start_urls = startList
 
-    rules = (
-        # Rule(LinkExtractor(allow=r'http://.+\.fang\.com/$'), callback='parse_family', follow=True),
-        Rule(LinkExtractor(allow=r'http://sh\.fang\.com/$'), callback='dircet_to_family', follow=True),
-        # Rule(LinkExtractor(allow=r'https://yufujk\.fang\.com/$'), callback='parse_loupanindex', follow=True),
-        # http://zz.fang.com/
-
-    )
+    rules = ruleList
 
     def parse_item(self, response):
         item = {}
-        # item['domain_id'] = response.xpath('//input[@id="sid"]/@value').get()
-        # item['name'] = response.xpath('//div[@id="name"]').get()
-        # item['description'] = response.xpath('//div[@id="description"]').get()
+
         return item
 
     def dircet_to_family(self, response):
-        newhouse_family = response.xpath('//a[contains(text(),"新房")]/@href').re('.*new.*')[0]
-        esf_family = response.xpath('//a[contains(text(),"二手房")]/@href').re('.*esf.*')[0]
-        zu_family = response.xpath('//a[contains(text(),"找租房")]/@href').re('.*zu.*')[0]
+        """处理城市首页的跳转
+        """
+        # 提取链接
+        newhouse_family = None
+        esf_family = None
+        zu_family = None
+        newhouse_family_list = response.xpath('//a[contains(text(),"新房")]/@href').re('.*new.*')
+        if len(newhouse_family_list)>0:
+            newhouse_family = newhouse_family_list[0]
+        esf_family_list = response.xpath('//a[contains(text(),"二手房")]/@href').re('.*esf.*')
+        if len(esf_family_list)>0:
+            esf_family = esf_family_list[0]
+        zu_family_list = response.xpath('//a[contains(text(),"找租房")]/@href').re('.*zu.*')
+        if len(zu_family_list)>0:
+            zu_family = zu_family_list[0]
 
+        # 若链接不为空 则将页面交给对应 方法抓取
         if newhouse_family is None:
             pass
         else:
             yield scrapy.Request(newhouse_family, callback=self.parse_family)
-
+       
+        # ☑️todo 二手房
         if esf_family is None:
             pass
         else:
             pass
 
+        # ☑️todo 租房信息
         if zu_family is None:
             pass
         else:
@@ -60,8 +95,10 @@ class FangindexSpider(CrawlSpider):
         pass
 
     def parse_family(self, response):
+        """处理新房首页的跳转和抓取
+        """
+        ml.l3(response.url)
         global pageCouner
-        print('解析城市小区列表'+response.url)
 
         loupans = response.xpath('//div[@id="newhouse_loupai_list"]/ul//li')
         # city = response.xpath('//div[@class="s4Box"]/a/text()').get()
@@ -111,12 +148,12 @@ class FangindexSpider(CrawlSpider):
                 continue
             else:
                 u = response.urljoin(i)
-                print(str(len(loupan_index))+ '---'+u)
+                ml.l3(str(len(loupan_index))+ '---'+u)
                 
                 loupan_index.append(u)
 
-                # print('发起请求的url'+'@'*80+u)
-                #yield scrapy.Request(u, callback=self.parse_loupanindex, meta={'midtag': False})
+                ml.l3('发起小区抓取：'+u)
+                yield scrapy.Request(u, callback=self.parse_loupanindex, meta={'midtag': False})
 
         next_page_url = response.xpath('//a[contains(text(),"下一页")]/@href').get()
         if next_page_url is None:
@@ -144,9 +181,8 @@ class FangindexSpider(CrawlSpider):
 
     def parse_loupanindex(self, response):
         # print('解析详情页的parse启动+'+response.url)
+        ml.l4(response.url)
         url = self.format_url(response.url)
-
-        print('@' * 80 + response.url + '----' + response.request.url)
 
         script = response.xpath('//script')
         part_dis = script.re('district.*')
@@ -195,15 +231,16 @@ class FangindexSpider(CrawlSpider):
         item = NewhouseIndexItem(url=url, name=name, unit_price=unit_price, tag=tag, louaddress=louaddress,
                                  sale_time=sale_time, delivery_time=delivery_time,
                                  huxin_main=huxin_main, other_name=other_name, part=part, compart=compart, city=city)
-        print(item)
+        ml.l4('楼盘index抓取到：'+str(item))
+        #print(item)
         yield item
         detail_url = response.xpath('//a[contains(text(),"楼盘详情")]/@href').get()
-        print('0' * 100 + detail_url)
+        #print('0' * 100 + detail_url)
         detail_url = response.urljoin(detail_url)
 
         yield scrapy.Request(detail_url, callback=self.parse_loupanDetail)
 
-        # 处理开盘时间
+        # 开盘时间
         sale_time_url = response.xpath('//a[@class="kaipan"]/@href').get()
         sale_time_url = response.urljoin(sale_time_url)
         yield scrapy.Request(sale_time_url, callback=self.parse_sale_time)
@@ -213,11 +250,14 @@ class FangindexSpider(CrawlSpider):
         post_history_url = response.urljoin(post_history_url)
         yield scrapy.Request(post_history_url, callback=self.parse_history_post_index)
 
+        #交房时间抓取
         delivery_time_url = response.xpath('//a[contains(text(),"更多交房详情>>")]/@href').get()
         delivery_time_url = response.urljoin(delivery_time_url)
         yield scrapy.Request(delivery_time_url, callback=self.parse_delivery_time_index)
 
     def parse_delivery_time_index(self, response):
+        """抓取交房时间详情页所有的信息
+        """
         url = self.format_url(response.url)
         delivery_list = []
         trs = response.xpath('//div[@class="kpjjlu"]//tr')
@@ -238,8 +278,9 @@ class FangindexSpider(CrawlSpider):
                             note = '出现错误 下面为原文' + str(tds)
                 delivery_list.append({'date': date, 'note': note})
             item = NewhouseDeliveryTimeDetailIndex(url=url, delivery_time=delivery_list)
-            print(item)
-            print('-' * 100)
+            #print(item)
+            ml.l5("交房详情页："+str(item))
+            #print('-'*100)
             yield item
 
     def parse_history_post_index(self, response):
@@ -256,7 +297,8 @@ class FangindexSpider(CrawlSpider):
 
             post = {'url': response.url, 'short_data': short_post_list}
             item = NewhouseKaipanPostDetail(url=url, post_list=post)
-            print(item)
+            ml.l5("开盘时间："+str(item))
+            #print(item)
             yield item
             return
         else:
@@ -280,7 +322,7 @@ class FangindexSpider(CrawlSpider):
         if 'item' in response.meta.keys():
             item = response.meta['item']
         else:
-            print('&' * 80 + '程序出错 这里应该能获得item对象' + response.url)
+            ml.error('&' * 80 + '程序出错 这里应该能获得item对象' + response.url)
             return
 
         title = response.xpath('//h1[@class="atc-tit"]/text()').get()
@@ -292,7 +334,7 @@ class FangindexSpider(CrawlSpider):
 
         syp = response.xpath('//a[@class="syp"]/@href').get()
         if 'javascript' in syp:
-            print(item)
+            ml.l5("动态："+str(item))
             return item
 
     def request_family(self, request):
@@ -319,13 +361,14 @@ class FangindexSpider(CrawlSpider):
 
         # dic['kaipan'] = td_l
         item = NewhouseKaipanDetail(kaipan=td_l, url=url)
-        print(item)
+        #print(item)
+        ml.l5("开盘详情："+str(item))
         yield item
 
         pass
 
     def parse_loupanDetail(self, response):
-        print('正在解析Detail页面-------' + response.url)
+        ml.l5('详情页抓取：'+response.url)
         url = self.format_url(response.url)
         contents = response.xpath('//div[@class="main-info-price"]/../..').xpath('.//li')[1].get()
         contents = self.format_text(contents)
@@ -458,8 +501,9 @@ class FangindexSpider(CrawlSpider):
                                   greening_ratio=greening_ratio, parking=parking, counter_buidings=counter_buidings,
                                   counter_households=counter_households, wuye_corp=wuye_corp, wuye_cost=wuye_cost,
                                   wuye_note=wuye_note, status_buidings=status_buidings, sale_time=sale_time, poi=poi)
-        print(item)
-        # print(poi)
+        #print(item)
+        ml.l5("详情页："+str(item))
+        #print(poi)
         return item
 
     def format_url(self, url):

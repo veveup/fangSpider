@@ -20,10 +20,18 @@ CREATE DATABASE IF NOT EXISTS `fangSpider` /*!40100 DEFAULT CHARACTER SET utf8mb
 
 use fangSpider;
 
-source ./sql/loupanindex.sql
+source ./sql/loupanindex.sql;
+// use ./sql/x.sql file to create TABEL
+//exit mysql and make sure 
+scrapy crawl fangIndex
+//爬取所有城市在售小区 楼盘信息
 
-scrapy fangSpider
+scrapy crawl fangIndexSolo
+//爬取单独城市在售小区 
 ```
+
+#爬取单独城市在售小区
+./spiders/fangIndexSolo.py
 
 
 # 数据库 Mysql 

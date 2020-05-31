@@ -12,9 +12,14 @@ from fangSpider.items import NewhouseKaipanDetail
 from fangSpider.items import NewhouseKaipanPostDetail
 from fangSpider.items import NewhouseDeliveryTimeDetailIndex
 
-import mysqlcfg
+from fangSpider import mysqlcfg
+from fangSpider import mylogger
 
 TABLENAME = mysqlcfg.TABLENAME
+
+# 获得logger
+ml = mylogger.myLogger()
+logger = ml.getLogger()
 
 
 class MysqlUtil:
@@ -77,12 +82,12 @@ class FangspiderCityloupanIndex(object):
 
     def process_item(self,item,spider):
         if not type(item) == type(NewhouseIndexItem()):
-            print('不是这个对象 返回'+str(type(item)))
+            ml.debug('不是Index对象 返回'+str(type(item)))
             return item
         if 'newhouse.fang.com' in item['url']:
-            print('不是一个index页面 返回'+item['url'])
+            ml.debug('不是index页面 返回'+item['url'])
             return item
-        print('*'*20+str(type(item)))
+        #print('*'*20+str(type(item)))
         sql = 'INSERT INTO '+TABLENAME+'(url, name, unit_price, tag, louaddress, sale_time, delivery_time, huxin_main,other_name,part,compart,city) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s)'
         val = (item['url'],item['name'],item['unit_price'],str(item['tag']),item['louaddress'],
         item['sale_time'],item['delivery_time'],item['huxin_main'],item['other_name'],item['part'],
@@ -99,9 +104,9 @@ class fangSpiderCityloupanDetail(object):
         self.mydb,self.cur = sqlutil.getDBcur()
     def process_item(self,item,spider):
         if not type(item) == type(NewhouseDetailItem()):
-            print('不是这个Detail对象 返回'+str(type(item)))
+            ml.debug('不是Detail对象 返回'+str(type(item)))
             return item
-        print('#'*20+str(type(item)))
+        #print('#'*20+str(type(item)))
         sql = 'UPDATE '+TABLENAME+' SET profile=%s,presale=%s,history_price=%s,poi=%s,buiding_type=%s,alright=%s,location=%s,property=%s,status=%s,marker_address=%s,phone_plat = %s,floor_area=%s,gross_area=%s,gross_area_ratio=%s,greening_ratio=%s,parking=%s,counter_buidings=%s,counter_households=%s,wuye_corp=%s,wuye_cost=%s,wuye_note=%s,status_buidings=%s WHERE url=%s'
 
         val = (item['profile'],json.dumps(item['presale']),json.dumps(item['price_history']),
@@ -123,7 +128,7 @@ class fangSpiderCityloupanKaipanDetail(object):
     
     def process_item(self,item,spider):
         if not type(item) == type(NewhouseKaipanDetail()):
-            print('不是这个KaipanDetail对象 返回'+str(type(item)))
+            ml.debug('不是KaipanDetail对象 返回'+str(type(item)))
             return item
         sql = 'UPDATE '+TABLENAME+' SET history_kaipan = %s WHERE url = %s'
         val = (json.dumps(item['kaipan']),item['url'],)
@@ -140,7 +145,7 @@ class fangSpiderCityloupanPosthistory(object):
     
     def process_item(self,item,spider):
         if not type(item) == type(NewhouseKaipanPostDetail()):
-            print('不是这个Posthistory对象 返回'+str(type(item)))
+            ml.debug('不是Posthistory对象 返回'+str(type(item)))
             return item
         sql = 'UPDATE '+TABLENAME+' SET history_post = %s WHERE url = %s'
         val = (json.dumps(item['post_list']),item['url'],)
@@ -156,7 +161,7 @@ class fangSpiderCityloupanDeliveryTimeIndex(object):
     
     def process_item(self,item,spider):
         if not type(item) == type(NewhouseDeliveryTimeDetailIndex()):
-            print('不是这个DeliveryTimeList对象 返回'+str(type(item)))
+            ml.debug('不是DeliveryTimeList对象 返回'+str(type(item)))
             return item
         sql = 'UPDATE '+TABLENAME+' SET delivery_time = %s WHERE url = %s'
         val = (str(item['delivery_time']),item['url'],)
