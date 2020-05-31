@@ -1,5 +1,9 @@
-# Init
+<p align="center">
 
+<img src="https://img.shields.io/badge/license-MIT-green" >
+<img src="https://img.shields.io/badge/License-Python3-blue.svg">
+
+</p>
 ## Requirement
 Python3.5+ and Scrapy2.0, Mysql 6.0+, requirements.txt extension installed.
 
@@ -60,6 +64,3 @@ passwd = '12345678'
 database ='fangSpider'
 TABLENAME = 'loupanindex'
 ```
-
-
-
