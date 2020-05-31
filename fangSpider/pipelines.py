@@ -12,15 +12,21 @@ from fangSpider.items import NewhouseKaipanDetail
 from fangSpider.items import NewhouseKaipanPostDetail
 from fangSpider.items import NewhouseDeliveryTimeDetailIndex
 
-TABLENAME = 'loupanindexsh'
+import mysqlcfg
+
+TABLENAME = mysqlcfg.TABLENAME
+
 
 class MysqlUtil:
+    
+    
     def __init__(self):
+        
         self.mydb = mysql.connector.connect(
-            host = '127.0.0.1',
-            user = 'root',
-            passwd = '12345678',
-            database ='fangSpider',
+            host = mysqlcfg.host,
+            user = mysqlcfg.user,
+            passwd = mysqlcfg.passwd,
+            database =mysqlcfg.database,
         )
         self.cursor = self.mydb.cursor()
     def getDBcur(self):
