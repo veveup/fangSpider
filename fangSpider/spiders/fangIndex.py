@@ -23,7 +23,7 @@ host = 'fang'
 site = host+'.com'
 
 #是否只抓取一个城市 
-isSoloCityOnly = False
+isSoloCityOnly = True
 # 从相应网站获得 城市的代码 比如郑州是 zz 
 citycode = 'zz'
 
