@@ -1,10 +1,10 @@
 # Init
 
-#Requirement
+# Requirement
 Python3.5+ and Scrapy2.0, Mysql 6.0+, requirement.txt extension installed.
 
 
-#Quick Start
+# Quick Start
 Note：This is requires python3, scrapy, requirement.txt extension in order to work. 
 
 ```bash
@@ -32,6 +32,7 @@ scrapy crawl fangIndexSolo
 
 #爬取单独城市在售小区
 ./spiders/fangIndexSolo.py
+
 
 
 # 数据库 Mysql 
