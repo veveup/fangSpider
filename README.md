@@ -20,8 +20,8 @@ Python3.5+ and Scrapy2.0, Mysql 6.0+, requirements.txt extension installed.
 Note：This is requires python3, scrapy, requirements.txt extension in order to work. 
 
 ```bash
-git glone this
-cd this
+git clone https://github.com/veveup/fangSpider.git
+cd fangSpider
 
 pip -r install requirements.txt
 
