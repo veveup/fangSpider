@@ -4,6 +4,14 @@
 <img src="https://img.shields.io/badge/License-Python3-blue.svg">
 
 </p>
+
+## Todo
+- [x] 新房数据抓取
+- [ ] 二手房房源抓取
+- [ ] 租房房源抓取 
+- [ ] 添加 scrapy-redis  以支持分布式
+- [ ] 优化数据库使匹配高并发，批量执行语句或在中间增加一层cache
+
 ## Requirement
 Python3.5+ and Scrapy2.0, Mysql 6.0+, requirements.txt extension installed.
 
@@ -32,6 +40,17 @@ source ./sql/loupanindex.sql;
 scrapy crawl fangIndex
 //默认爬取郑州城市在售小区 楼盘信息 
 ```
+## Demo
+![alt Crawled Data](./res/demo5.png)
+
+[comment]: <![alt Crawled Data](./res/demo4.png)>
+![alt Crawled Data](./res/demo3.png)
+
+[//]:<![alt Crawled Data](./res/demo2.png)>
+![alt Crawled Data](./res/demo1.png)
+![alt Crawled Data](./res/demo6.png)
+
+
 ## More usage
 
 + 修改 TABEL 名字，将不同城市的数据放入不同的表内
