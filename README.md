@@ -6,11 +6,11 @@
 </p>
 
 ## Todo
-* [x] 新房数据抓取
-* [ ] 二手房房源抓取
-* [ ] 租房房源抓取 
-* [ ] 添加 scrapy-redis  以支持分布式
-* [ ] 优化数据库使匹配高并发，批量执行语句或在中间增加一层cache
+* ✅ 新房数据抓取
+* ☑️ 二手房房源抓取
+* ☑️ 租房房源抓取 
+* ☑️ 添加 scrapy-redis  以支持分布式
+* ☑️ 优化数据库使匹配高并发，批量执行语句或在中间增加一层cache
 
 ## Requirement
 Python3.5+ and Scrapy2.0, Mysql 6.0+, requirements.txt extension installed.
