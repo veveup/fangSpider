@@ -93,3 +93,4 @@ self.logger.propagate = False
 
 # 为了能同时输出到终端以及保存到log文件 添加了 logging ，但在linux系统下会和scrapy的logging出现重复输出的情况 所以关闭了 mylogger 的终端输出能力 使用系统默认的输出 
 ```
+

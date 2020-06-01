@@ -1,2 +1,5 @@
 ./fangSpider/spiders/fangIndexSolo.py
 ./logScrapy.log
+__pycache__/
+.DS_Store
+__init__.py
